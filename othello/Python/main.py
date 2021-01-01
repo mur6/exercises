@@ -1,4 +1,4 @@
-from itertools import izip
+#from itertools import izip
 import random
 
 __all__ = [
@@ -67,7 +67,7 @@ class Board(object):
         rev_p = piece_rev(cur_p)
         #print list(self.around8_points(row, col))
         #print list(self.eight_pieces_until_empty(row, col))
-        for points, pieces in izip(self.around8_points(row, col), self.eight_pieces_until_empty(row, col)):
+        for points, pieces in zip(self.around8_points(row, col), self.eight_pieces_until_empty(row, col)):
             if len(pieces) < 3:
                 continue
             if pieces == self._turned(pieces):
@@ -95,9 +95,11 @@ class Board(object):
             yield zip(f(row), g(col))
 
     def display(self):
-        print ' |%s|' % ('|'.join([str(i) for i in range(1, 8 + 1)]))
+        s = '|'.join(str(i) for i in range(1, 8 + 1))
+        print(f' |{s}|')
         for j, row in enumerate(self.rows):
-            print '%d|%s|'% (j + 1, '|'.join([piece_conv(p) for p in row]))
+            s = '|'.join(piece_conv(p) for p in row)
+            print(f'{j + 1}|{s}|')
 
 def piece_rev(p):
     if p == WHITE:
@@ -129,11 +131,11 @@ class GameOver(Exception):
 
 def human_input(board, piece):
     try:
-        col = raw_input('yoko?')
+        col = input('yoko?')
         col = int(col) - 1
-        row = raw_input('tate?')
+        row = input('tate?')
         row = int(row) - 1
-    except ValueError, e:
+    except ValueError as e:
         raise HumanInputError(u'1-8の数字を入力して下さい')
     if board.get(row, col) != EMPTY:
         raise HumanInputError(u'そこにはおけません')
@@ -167,20 +169,23 @@ def main_loop(board):
                 raise GameOver(GameOver.CANNOT_PUT, looser=player)
             while True:
                 board.display()
-                print '%s, your turn[%s]:' % (player, piece_conv(piece))
+                print(f'{player}, your turn[{piece_conv(piece)}]:')
                 try:
                     row, col = human_input(board, piece)
-                except HumanInputError, e:
-                    print unicode(e)
+                except HumanInputError as e:
+                    print(e)
                 else:
                     break
             board.update(row, col, piece)
         else:
             if not list(find_turnable_points(board, piece)):
                 raise GameOver(GameOver.CANNOT_PUT, looser=player)
-            print '%s, your turn[%s]:' % (player, piece_conv(piece))
+            print (f'{player}, your turn[{piece_conv(piece)}]:')
             points = list(find_turnable_points(board, piece))
             row, col = random.choice(points)
-            print 'computer put (%d, %d).' % (col + 1, row + 1)
+            print(f'computer put (%d, %d).' % (col + 1, row + 1))
             board.put(row, col, piece)
             board.update(row, col, piece)
+
+b = Board()
+main_loop(b)
